@@ -3,13 +3,46 @@ const cors=require("cors")
 require('dotenv').config()
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const app = express()
+const admin = require("firebase-admin");
 const port = process.env.PORT || 3000;
-console.log(process.env) 
+//console.log(process.env) 
+
+
+
+const serviceAccount = require("./online-learning-platform-firebase-adminsdk.json");
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount)
+});
+
 
 
 //middleware
 app.use(cors())
 app.use(express.json())
+
+const verifyFireBaseToken = async (req, res, next) => {
+    if (!req.headers.authorization) {
+        return res.status(401).send({ message: 'unauthorized access' });
+    }
+    const token = req.headers.authorization.split(' ')[1];
+    if (!token) {
+        return res.status(401).send({ message: 'unauthorized access' })
+    }
+    // verify token
+    try {
+        
+        const userInfo=await admin.auth().verifyIdToken(token);
+        req.token_email = userInfo.email;
+        console.log('after token validation', userInfo);
+        next();
+    }
+    catch {
+        console.log('invalid token')
+        return res.status(401).send({ message: 'unauthorized access' })
+    }
+
+}
 
 
 
@@ -70,7 +103,7 @@ async function run() {
     })
 
      //get api(get a specific course)
-    app.get("/courses/:id",async(req,res)=>{
+    app.get("/courses/:id",verifyFireBaseToken,async(req,res)=>{
         const id=req.params.id;
         const query={_id: new ObjectId(id)}
         const result = await coursesCollection.findOne(query);
