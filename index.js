@@ -60,6 +60,12 @@ async function run() {
             const result = await cursor.toArray();
             res.send(result);
         })
+      //filter by course category
+      app.get("/filter", async(req, res) => {
+      const filter_category = req.query.search
+      const result = await coursesCollection.find({category: {$regex: filter_category, $options: "i"}}).toArray()
+      res.send(result)
+    })
 
 
 
