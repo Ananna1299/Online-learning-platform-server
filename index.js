@@ -151,9 +151,43 @@ async function run() {
     //post api
        app.post('/enroll', async (req, res) => {
             const newenroll = req.body;
+            
+            
+            const existingEnrollment = await enrollCollection.findOne({
+          
+            title: newenroll.title, 
+            price:newenroll.price,
+            duration:newenroll.duration,
+            category:newenroll.category,
+            description:newenroll.description,
+            added_by:newenroll.added_by
+           });
+
+          if (existingEnrollment) {
+            return res.status(400).send({
+              success: false,
+              message: "You are already enrolled in this course!",
+            });
+          }
             const result = await enrollCollection.insertOne(newenroll);
-            res.send(result);
+            res.send({
+                    success: true,
+                    message: "Enrolled successfully!",
+                    result,
+                  });
         })
+
+      //get api
+        app.get("/my-enroll", verifyFireBaseToken, async(req, res) => {
+      const email = req.query.email
+       if (email !== req.token_email) {
+                return res.status(403).send({ message: 'forbidden access' })
+            }
+      const result = await enrollCollection.find({enrolled_by: email}).toArray()
+      res.send(result)
+    })
+
+        
 
     
 
