@@ -130,6 +130,21 @@ async function run() {
             const result = await coursesCollection.deleteOne(query);
             res.send(result);
         })
+    //Update course info
+    app.put("/courses/:id",  async (req, res) => {
+      const { id } = req.params;
+      const data = req.body;
+      
+      const objectId = new ObjectId(id);
+      const filter = { _id: objectId };
+      const update = {
+        $set: data,
+      };
+
+      const result = await coursesCollection.updateOne(filter, update);
+
+      res.send(result);
+    });
     
 
 
