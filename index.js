@@ -83,11 +83,14 @@ async function run() {
 
      //get all courses
      app.get('/courses', async (req, res) => {
-          const query=req.body
-
-            const cursor = coursesCollection.find(query);
+        
+           const cursor = coursesCollection.find();
             const result = await cursor.toArray();
             res.send(result)
+
+        
+
+           
         });
       //6 courses by feature field
       app.get('/feature-courses', async (req, res) => {
@@ -110,6 +113,16 @@ async function run() {
         //console.log(result)
         res.send(result)
     })
+    //get only a user added courses
+    app.get("/my-courses", verifyFireBaseToken, async(req, res) => {
+      const email = req.query.email
+       if (email !== req.token_email) {
+                return res.status(403).send({ message: 'forbidden access' })
+            }
+      const result = await coursesCollection.find({added_by: email}).toArray()
+      res.send(result)
+    })
+    
 
 
 
