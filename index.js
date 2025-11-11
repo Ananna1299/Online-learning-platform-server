@@ -72,8 +72,9 @@ async function run() {
       const db = client.db('learningDB');
       //collections
       const coursesCollection = db.collection('courses');
+      const enrollCollection = db.collection('enrollCourse');
 
-
+      //courseCollection apis
       //post api
        app.post('/courses', async (req, res) => {
             const newcourse = req.body;
@@ -145,6 +146,15 @@ async function run() {
 
       res.send(result);
     });
+
+    //enrollCollection apis
+    //post api
+       app.post('/enroll', async (req, res) => {
+            const newenroll = req.body;
+            const result = await enrollCollection.insertOne(newenroll);
+            res.send(result);
+        })
+
     
 
 
