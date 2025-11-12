@@ -160,7 +160,8 @@ async function run() {
             duration:newenroll.duration,
             category:newenroll.category,
             description:newenroll.description,
-            added_by:newenroll.added_by
+            added_by:newenroll.added_by,
+            enrolled_by:newenroll.enrolled_by
            });
 
           if (existingEnrollment) {
