@@ -9,7 +9,9 @@ const port = process.env.PORT || 3000;
 
 
 
-const serviceAccount = require("./online-learning-platform-firebase-adminsdk.json");
+// index.js
+const decoded = Buffer.from(process.env.FIREBASE_SERVICE_KEY, "base64").toString("utf8");
+const serviceAccount = JSON.parse(decoded);
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount)
@@ -66,7 +68,7 @@ app.get('/', (req, res) => {
 async function run() {
     try{
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+    //await client.connect();
     
 
       const db = client.db('learningDB');
@@ -199,7 +201,7 @@ async function run() {
 
 
     // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
+    //await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
 
     }
