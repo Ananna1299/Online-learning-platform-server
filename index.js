@@ -109,13 +109,18 @@ async function run() {
     })
 
      //get api(get a specific course)
-    app.get("/courses/:id",verifyFireBaseToken,async(req,res)=>{
+    app.get("/courses/:id",async(req,res)=>{
         const id=req.params.id;
+        console.log(id)
         const query={_id: new ObjectId(id)}
         const result = await coursesCollection.findOne(query);
         //console.log(result)
         res.send(result)
     })
+
+
+
+
     //get only a user added courses
     app.get("/my-courses", verifyFireBaseToken, async(req, res) => {
       const email = req.query.email
