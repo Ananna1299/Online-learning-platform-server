@@ -75,6 +75,7 @@ async function run() {
       //collections
       const coursesCollection = db.collection('courses');
       const enrollCollection = db.collection('enrollCourse');
+      const userCollection = db.collection('user');
 
       //courseCollection apis
       //post api
@@ -84,29 +85,84 @@ async function run() {
             res.send(result);
         })
 
-     //get all courses
+
+  
+  
+
+
+
+
+
+
+
+
+
+
+//get all courses
      app.get('/courses', async (req, res) => {
-        
-           const cursor = coursesCollection.find();
-            const result = await cursor.toArray();
-            res.send(result)
+      const {limit=0,skip=0,sort="price",order="desc",search="",type}=req.query
+
+      const sortOption={}
+      sortOption[sort || "price"]= order==="asc"? 1: -1;
+
+      const query = search
+        ? { title: { $regex: search, $options: "i" } }
+        : {};
+
+
+         if (type) {
+        query.category = type;
+      }
 
         
+           const course = await coursesCollection.find(query)
+           .limit(Number(limit))
+           .sort(sortOption)
+           .skip(Number(skip))
+           .toArray();
 
-           
-        });
-      //6 courses by feature field
+
+           const count=await coursesCollection.countDocuments(query)
+          res.send({course,total:count})
+});
+
+
+
+
+
+
+     // 6 courses by feature field
       app.get('/feature-courses', async (req, res) => {
             const cursor = coursesCollection.find({isFeatured: true }).limit(6);
             const result = await cursor.toArray();
             res.send(result);
+
+
         })
-      //filter by course category
-      app.get("/filter", async(req, res) => {
-      const filter_category = req.query.search
-      const result = await coursesCollection.find({category: {$regex: filter_category, $options: "i"}}).toArray()
-      res.send(result)
-    })
+
+
+
+
+    //   //filter by course category
+    //   app.get("/filter", async(req, res) => {
+    //   const filter_category = req.query.search
+    //   const result = await coursesCollection.find({category: {$regex: filter_category, $options: "i"}}).toArray()
+    //   res.send(result)
+    // })
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
      //get api(get a specific course)
     app.get("/courses/:id",async(req,res)=>{
@@ -195,9 +251,64 @@ async function run() {
       res.send(result)
     })
 
-        
 
+
+    //get api
+        app.get("/all-enroll", async(req, res) => {
+      
+      const result = await enrollCollection.find().toArray()
+      res.send(result)
+    })
+
+        
+ //user apis
+
+ //user data post api
+    app.post("/users", async (req, res) => {
+      const user = req.body;
+      user.role = "user";
+      user.createdAt = new Date();
+      const email = user.email;
+
+      //console.log("Received user:", user);
+      //console.log("Photo URL:", user.photoURL);
+
+      const userExists = await userCollection.findOne({ email });
+      if (userExists) {
+        return res.send({ message: "User already exist" });
+      }
+      const result = await userCollection.insertOne(user);
+      res.send(result);
+    });
     
+
+    //get api
+        app.get("/users", verifyFireBaseToken, async(req, res) => {
+      const email = req.query.email
+       if (email !== req.token_email) {
+                return res.status(403).send({ message: 'forbidden access' })
+            }
+      const result = await userCollection.find({email: email}).toArray()
+      res.send(result)
+    })
+
+
+
+     //Update course info
+    app.put("/users/:id",  async (req, res) => {
+      const { id } = req.params;
+      const data = req.body;
+      
+      const objectId = new ObjectId(id);
+      const filter = { _id: objectId };
+      const update = {
+        $set: data,
+      };
+
+      const result = await userCollection.updateOne(filter, update);
+
+      res.send(result);
+    });
 
 
 
